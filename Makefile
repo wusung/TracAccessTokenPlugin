@@ -1,5 +1,6 @@
 BRANCH		= `git rev-parse --abbrev-ref HEAD`
 VERSION		= `cat VERSION`
+TRACD_CONFIG_PATH = ../test
 
 init:
 	pip install -r requirements.txt
@@ -29,3 +30,6 @@ tag:
 	git tag v$(VERSION)
 	git commit -m "chore: Bump to v$(VERSION)"
 	git push origin $(BRANCH)
+
+server:
+	tracd -r --port 8001 -b 0.0.0.0 $(TRACD_CONFIG_PATH)
