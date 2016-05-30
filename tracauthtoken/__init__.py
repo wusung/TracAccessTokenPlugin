@@ -1,4 +1,3 @@
-from advsearch import SearchBackendException
-from advsearch import AdvancedSearchPlugin
-from esbackend import PyElasticSearchBackEnd
+from accesstoken import AccessTokenBackendException
+from accesstoken import AdvancedSearchPlugin
 from interface import IAdvSearchBackend

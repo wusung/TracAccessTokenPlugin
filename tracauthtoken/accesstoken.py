@@ -3,7 +3,7 @@ accesstoken.py - Advanced Access Token Generator Plugin for Trac
 
 This module defines a Trac extension point for the access token generator backend.
 
-See TracAdvancedSearchBackend for more details.
+See TracTracAccessTokenBackend for more details.
 """
 
 import itertools
@@ -23,6 +23,7 @@ from trac.web.chrome import ITemplateProvider
 from trac.web.main import IRequestHandler
 from trac.wiki.api import IWikiChangeListener
 from trac.wiki.api import IWikiSyntaxProvider
+from trac.prefs import IPreferencePanelProvider
 
 from genshi.builder import tag, Element
 from interface import IAdvSearchBackend
@@ -102,13 +103,14 @@ class AccessTokenBackendException(Exception):
 
 class AdvancedSearchPlugin(Component):
     implements(
-        INavigationContributor,
-        IPermissionRequestor,
-        IRequestHandler,
-        ITemplateProvider,
-        ITicketChangeListener,
-        IWikiChangeListener,
-        IWikiSyntaxProvider,
+        # INavigationContributor,
+        # IPermissionRequestor,
+        # IRequestHandler,
+        # ITemplateProvider,
+        # ITicketChangeListener,
+        # IWikiChangeListener,
+        # IWikiSyntaxProvider,
+        IPreferencePanelProvider
     )
     
     providers = ExtensionPoint(IAdvSearchBackend)
@@ -424,6 +426,22 @@ class AdvancedSearchPlugin(Component):
     def ticket_change_deleted(self, ticket, cdate, changes):
         self.ticket_created(ticket)
 
+    # IPreferencePanelProvider methods
+    def get_preference_panels(self, req):
+        yield ('scratchpad', _('Scratchpad'))
+
+    def render_preference_panel(self, req, panel):
+        if req.method == 'POST':
+            new_content = req.args.get('scratchpad_textarea')
+            if new_content:
+                req.session['scratchpad'] = new_content
+                add_notice(req, _('Your Scratchpad text has been saved.'))
+            req.redirect(req.href.prefs(panel or None))
+
+        return 'prefs_scratchpad.html', {
+            'scratchpad_text': req.session.get('scratchpad', 'your text')
+        }
+
     def _get_groups(self, user):
         groups = set([user])
         for provider in self.group_providers:
@@ -435,11 +453,11 @@ class AdvancedSearchPlugin(Component):
         perms = PermissionSystem(self.env).get_user_permission(user)
         repeat = True
         while repeat:
-        repeat = False
-        for subject, action in perms:
-            if subject in groups and not action.isupper() and action not in groups:
-            groups.add(action)
-            repeat = True
+            repeat = False
+            for subject, action in perms:
+                if subject in groups and not action.isupper() and action not in groups:
+                    groups.add(action)
+                    repeat = True
 
         return groups
 

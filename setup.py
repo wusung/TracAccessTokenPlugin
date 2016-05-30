@@ -37,7 +37,7 @@ setup(name=PACKAGE,
     license='SEE LICENSE',
     platforms=['linux', 'osx', 'unix', 'win32'],
     packages=[PACKAGE],
-    entry_points={'trac.plugins': '%s = traceauthtoken' % PACKAGE},
+    entry_points={'trac.plugins': '%s = tracauthtoken' % PACKAGE},
     package_data={
         'tracauthtoken/': [
             'templates/*.html',
