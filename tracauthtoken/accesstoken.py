@@ -36,7 +36,7 @@ from trac.perm import IPermissionGroupProvider
 from trac.util.html import html
 from trac.util.presentation import Paginator
 from trac.util.translation import _
-from trac.web.chrome import add_stylesheet, add_warning, add_script
+from trac.web.chrome import add_stylesheet, add_warning, add_script, add_notice
 from trac.wiki.formatter import extract_link
 
 import operator
@@ -47,7 +47,7 @@ CONFIG_FIELD = {
     'menu_label': (
         CONFIG_SECTION_NAME,
         'menu_label',
-        'Access Token',
+        'Access Tokens',
     ),
     'ticket_status': (
         CONFIG_SECTION_NAME,
@@ -127,7 +127,7 @@ class AdvancedSearchPlugin(Component):
 
     def get_navigation_items(self, req):
         if 'SEARCH_VIEW' in req.perm:
-            abel = self.config.get(*CONFIG_FIELD['menu_label'])
+            label = self.config.get(*CONFIG_FIELD['menu_label'])
             yield ('mainnav',
                    'accesstoken',
                    html.A(_(label), href=self.env.href.advsearch())
@@ -434,7 +434,8 @@ class AdvancedSearchPlugin(Component):
 
         Add access token entry in Preferences
         """
-        yield ('accesstoken', _('AccessToken'))
+        label = self.config.get(*CONFIG_FIELD['menu_label'])
+        yield ('accesstoken', label)
 
     def render_preference_panel(self, req, panel):
         """
@@ -444,10 +445,18 @@ class AdvancedSearchPlugin(Component):
         """
         if req.method == 'POST':
             new_content = req.args.get('scratchpad_textarea')
+            new_token = req.args.get('token')
             if new_content:
                 req.session['scratchpad'] = new_content
-                add_notice(req, _('Your Scratchpad text has been saved.'))
+                add_notice(req, _('Your access tokens have been saved.'))
             req.redirect(req.href.prefs(panel or None))
+
+        self.log.debug("render_preference_panel()")
+
+        # add_stylesheet(req, PACKAGE + '/css/advsearch.css')
+        # add_stylesheet(req, PACKAGE + '/css/pikaday.css')
+        # add_script(req, PACKAGE + '/js/advsearch.js')
+        # add_script(req, PACKAGE + '/js/pikaday.js')
 
         return 'prefs_tokens.html', {
             'scratchpad_text': req.session.get('scratchpad', 'your text')

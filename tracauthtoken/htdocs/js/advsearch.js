@@ -52,4 +52,8 @@ $(document).ready(function() {
 	})
     var search = $('link[rel=search]'); 
     $(search).attr('href', $(search).attr('href').replace('search', 'advsearch'));
-})
+
+	$('#newToken').click(function() {
+		alert('x');
+	});
+});
