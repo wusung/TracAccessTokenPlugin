@@ -101,128 +101,128 @@ class AccessTokenBackendException(Exception):
 
 
 class AdvancedSearchPlugin(Component):
-        implements(
-            INavigationContributor,
-            IPermissionRequestor,
-            IRequestHandler,
-            ITemplateProvider,
-            ITicketChangeListener,
-            IWikiChangeListener,
-            IWikiSyntaxProvider,
-        )
+    implements(
+        INavigationContributor,
+        IPermissionRequestor,
+        IRequestHandler,
+        ITemplateProvider,
+        ITicketChangeListener,
+        IWikiChangeListener,
+        IWikiSyntaxProvider,
+    )
+    
+    providers = ExtensionPoint(IAdvSearchBackend)
+    group_providers = ExtensionPoint(IPermissionGroupProvider)
 
-	providers = ExtensionPoint(IAdvSearchBackend)
-        group_providers = ExtensionPoint(IPermissionGroupProvider)
+    DEFAULT_PER_PAGE = 15
 
-	DEFAULT_PER_PAGE = 15
+    def _get_source_filters(self):
+        return set(itertools.chain(*(p.get_sources() for p in self.providers)))
 
-	def _get_source_filters(self):
-            return set(itertools.chain(*(p.get_sources() for p in self.providers)))
+    # INavigationContributor methods
+    def get_active_navigation_item(self, req):
+        return 'accesstoken'
 
-	# INavigationContributor methods
-	def get_active_navigation_item(self, req):
-            return 'accesstoken'
-
-	def get_navigation_items(self, req):
+    def get_navigation_items(self, req):
         if 'SEARCH_VIEW' in req.perm:
-            label = self.config.get(*CONFIG_FIELD['menu_label'])
+            abel = self.config.get(*CONFIG_FIELD['menu_label'])
             yield ('mainnav',
                    'accesstoken',
                    html.A(_(label), href=self.env.href.advsearch())
             )
 
-	# IPermissionRequestor methods
-	def get_permission_actions(self):
+    # IPermissionRequestor methods
+    def get_permission_actions(self):
         return ['SEARCH_VIEW']
 
-	# IRequestHandler methods
-	def match_request(self, req):
+    # IRequestHandler methods
+    def match_request(self, req):
         # TODO: add /search if search module is disabled
         return re.match(r'/accesstoken?', req.path_info) is not None 
 
-	def process_request(self, req):
-		"""
-		Implements IRequestHandler.process_request
+    def process_request(self, req):
+        """
+        Implements IRequestHandler.process_request
 
-		Build a dict of search criteria from the user and request results from
-		the active AdvancedSearchBackend.
-		"""
-		req.perm.assert_permission('SEARCH_VIEW')
+        Build a dict of search criteria from the user and request results from
+        the active AdvancedSearchBackend.
+        """
+        req.perm.assert_permission('SEARCH_VIEW')
 
-		try:
-			per_page = int(req.args.getfirst('per_page',
-				self.DEFAULT_PER_PAGE))
-		except ValueError:
-			self.log.warn('Could not set per_page to %s' %
-					req.args.getfirst('per_page'))
-			per_page = self.DEFAULT_PER_PAGE
+        try:
+            per_page = int(req.args.getfirst('per_page',
+                self.DEFAULT_PER_PAGE))
+        except ValueError:
+            self.log.warn('Could not set per_page to %s' %
+                    req.args.getfirst('per_page'))
+            per_page = self.DEFAULT_PER_PAGE
 
-		try:
-			page = int(req.args.getfirst('page', 1))
-		except ValueError:
-			page = 1
+        try:
+            page = int(req.args.getfirst('page', 1))
+        except ValueError:
+            page = 1
 
-		sort_order = req.args.getfirst('sort_order', 'relevance')
+        sort_order = req.args.getfirst('sort_order', 'relevance')
 
         perms = PermissionSystem(self.env).get_user_permissions(req.perm.username)
-		data = {
-			'source': self._get_filter_dicts(req.args),
-			'author': [auth for auth in req.args.getlist('author') if auth],
-			'date_start': req.args.getfirst('date_start'),
-			'date_end': req.args.getfirst('date_end'),
-			'q': req.args.get('q'),
-			'start_points': StartPoints.parse_args(req.args, self.providers),
-			'per_page': per_page,
-			'sort_order': sort_order,
-			'ticket_statuses': self._get_ticket_statuses(req.args),
+        data = {
+            'source': self._get_filter_dicts(req.args),
+            'author': [auth for auth in req.args.getlist('author') if auth],
+            'date_start': req.args.getfirst('date_start'),
+            'date_end': req.args.getfirst('date_end'),
+            'q': req.args.get('q'),
+            'start_points': StartPoints.parse_args(req.args, self.providers),
+            'per_page': per_page,
+            'sort_order': sort_order,
+            'ticket_statuses': self._get_ticket_statuses(req.args),
             'from': req.args.getfirst('from'),
             'username': req.perm.username,
             'perms': perms
-		}
+        }
 
-		# Initial page request
-		if not any((data['q'], data['author'], data['date_start'], data['date_end'])):
-			return self._send_response(req, data)
+        # Initial page request
+        if not any((data['q'], data['author'], data['date_start'], data['date_end'])):
+            return self._send_response(req, data)
 
-		# Look for quickjump
-		quickjump = self._get_quickjump(req, data['q'])
-		if quickjump:
-			req.redirect(quickjump)
+        # Look for quickjump
+        quickjump = self._get_quickjump(req, data['q'])
+        if quickjump:
+            req.redirect(quickjump)
 
         self.log.debug(data)
-		# perform query using backend if q is set
-		result_map = {}
-		total_count = 0
-		for provider in self.providers:
-			result_count, result_list = 0, []
-			try:
-				result_count, result_list = provider.query_backend(data)
-			except AccessTokenBackendException, e:
-				add_warning(req, _('AccessTokenBackendException: %s' % e))
-			total_count += result_count
-			result_map[provider.get_name()] = result_list
+        # perform query using backend if q is set
+        result_map = {}
+        total_count = 0
+        for provider in self.providers:
+            result_count, result_list = 0, []
+            try:
+                result_count, result_list = provider.query_backend(data)
+            except AccessTokenBackendException, e:
+                add_warning(req, _('AccessTokenBackendException: %s' % e))
+            total_count += result_count
+            result_map[provider.get_name()] = result_list
 
-		if not total_count:
-			return self._send_response(req, data)
+        if not total_count:
+            return self._send_response(req, data)
 
-		data['page'] = page
-		results = self._merge_results(result_map, per_page)
-		self._add_href_to_results(results)
-		data['results'] = Paginator(
-			results,
-			page=page-1,
-			max_per_page=per_page,
-			num_items=total_count
-		)
+        data['page'] = page
+        results = self._merge_results(result_map, per_page)
+        self._add_href_to_results(results)
+        data['results'] = Paginator(
+            results,
+            page=page-1,
+            max_per_page=per_page,
+            num_items=total_count
+        )
 
-		# pagination next/prev links
-		#if data['results'].has_next_page:
+        # pagination next/prev links
+        #if data['results'].has_next_page:
         self.log.debug('%s %s', len(results), data['start_points'])
-		data['start_points'] = StartPoints.format(results, data['start_points'])
+        data['start_points'] = StartPoints.format(results, data['start_points'])
 
-		return self._send_response(req, data)
+        return self._send_response(req, data)
 
-	def _send_response(self, req, data):
+    def _send_response(self, req, data):
         """Send the response."""
 
         # look for warnings
@@ -240,7 +240,7 @@ class AdvancedSearchPlugin(Component):
         add_script(req, PACKAGE + '/js/pikaday.js')
         return 'tokens.html', data, None
 
-	def _merge_results(self, result_map, per_page):
+    def _merge_results(self, result_map, per_page):
         """
         Merge results from multiple sources by score in each result. Return
         the search results to display to the user
@@ -268,7 +268,7 @@ class AdvancedSearchPlugin(Component):
         all_results.sort(key=itemgetter('score'), reverse=True)
         return all_results[:per_page]
 
-	def _add_href_to_results(self, results):
+    def _add_href_to_results(self, results):
         """Add an href key/value to each result dict based on source."""
         for result in results:
             if result['source'] == 'wiki':
@@ -276,14 +276,14 @@ class AdvancedSearchPlugin(Component):
             if result['source'] == 'ticket':
                 result['href'] = self.env.href.ticket(result['ticket_id'])
 
-	def _get_filter_dicts(self, req_args):
+    def _get_filter_dicts(self, req_args):
         """Map filters to filter dicts for the frontend."""
         return [
             {'name': filter, 'active': req_args.get(filter)}
             for filter in self._get_source_filters()
         ]
 
-	def _get_ticket_statuses(self, req_args):
+    def _get_ticket_statuses(self, req_args):
         """Create map of ticket statuses."""
         status_values = _get_config_values(self.config, 'ticket_status')
         statuses = []
@@ -302,7 +302,7 @@ class AdvancedSearchPlugin(Component):
             })
         return statuses
 
-	def _get_quickjump(self, req, query):
+    def _get_quickjump(self, req, query):
         """Find quickjump requests if the search comes from the searchbox
         in the header.  The search is assumed to be from the header searchbox
         if no page or per_page arguments are found.
@@ -311,25 +311,25 @@ class AdvancedSearchPlugin(Component):
             return None
 
         link = extract_link(self.env,
-                Context.from_request(req, 'advsearch'), query)
+                Context.from_request(req, PACKAGE), query)
         if isinstance(link, Element):
             return link.attrib.get('href')
 
-	# ITemplateProvider methods
-	def get_htdocs_dirs(self):
+    # ITemplateProvider methods
+    def get_htdocs_dirs(self):
         return [('advsearch', pkg_resources.resource_filename(__name__, 'htdocs'))]
 
-	def get_templates_dirs(self):
+    def get_templates_dirs(self):
         return [pkg_resources.resource_filename(__name__, 'templates')]
 
-	# IWikiSyntaxProvider methods
-	def get_wiki_syntax(self):
+    # IWikiSyntaxProvider methods
+    def get_wiki_syntax(self):
         return []
 
-	def get_link_resolvers(self):
+    def get_link_resolvers(self):
         yield ('advsearch', self._format_link)
 
-	def _format_link(self, formatter, ns, target, label):
+    def _format_link(self, formatter, ns, target, label):
         path, query, fragment = formatter.split_link(target)
         if query:
             href = formatter.href.advsearch() + query.replace(' ', '+')
@@ -337,8 +337,8 @@ class AdvancedSearchPlugin(Component):
             href = target
         return tag.a(label, class_='search', href=href)
 
-	# IWikiChangeListener methods
-	def _update_wiki_page(self, page):
+    # IWikiChangeListener methods
+    def _update_wiki_page(self, page):
         doc = {
             'source': 'wiki',
             'id': 'wiki_%s' % page.name,
@@ -351,7 +351,7 @@ class AdvancedSearchPlugin(Component):
             except AccessTokenBackendException, e:
                 self.log.error('SearchBackendException: %s' % e)
 
-	def _delete_wiki_page(self, name):
+    def _delete_wiki_page(self, name):
         identifier = 'wiki_%s' % (name)
         for provider in self.providers:
             try:
@@ -363,85 +363,85 @@ class AdvancedSearchPlugin(Component):
         wiki_page_version_deleted = _update_wiki_page
         wiki_page_deleted = lambda self, page: self._delete_wiki_page(page.name)
 
-	def wiki_page_changed(self, page, version, t, comment, author, ipnr):
+    def wiki_page_changed(self, page, version, t, comment, author, ipnr):
         self._update_wiki_page(page)
 
-	def wiki_page_renamed(self, page, old_name):
+    def wiki_page_renamed(self, page, old_name):
         self._delete_wiki_page(old_name)
         self._update_wiki_page(page)
 
-	# ITicketChangeListener methods
-	def ticket_created(self, ticket):
-		comments = [
-			change[4] for change in ticket.get_changelog()
-			if change[2] == 'comment'
-		]
-		doc = {
-			'id': 'ticket_%s' % ticket.id,
-			'ticket_id': ticket.id,
-			'source': 'ticket',
-			'author': ticket['reporter'],
-			'ticket_version': ticket['version'],
-			'name': ticket['summary'],
-			'text': '%s %s' % (ticket['description'], ' '.join(comments)),
-			'description': '%s %s' % (ticket['description'], ' '.join(comments)),
-		}
-		for prop in (
-			'type',
-			'time',
-			'changetime',
+    # ITicketChangeListener methods
+    def ticket_created(self, ticket):
+        comments = [
+            change[4] for change in ticket.get_changelog()
+            if change[2] == 'comment'
+        ]
+        doc = {
+            'id': 'ticket_%s' % ticket.id,
+            'ticket_id': ticket.id,
+            'source': 'ticket',
+            'author': ticket['reporter'],
+            'ticket_version': ticket['version'],
+            'name': ticket['summary'],
+            'text': '%s %s' % (ticket['description'], ' '.join(comments)),
+            'description': '%s %s' % (ticket['description'], ' '.join(comments)),
+        }
+        for prop in (
+            'type',
+            'time',
+            'changetime',
             'cc',
-			'component',
-			'severity',
-			'priority',
-			'owner',
-			'milestone',
-			'status',
-			'resolution',
-			'keywords'
-		):
-		doc[prop] = ticket[prop]
-		for provider in self.providers:
-			try:
-				provider.upsert_document(doc)
-			except AccessTokenBackendException, e:
-				self.log.error('SearchBackendException: %s' % e)
+            'component',
+            'severity',
+            'priority',
+            'owner',
+            'milestone',
+            'status',
+            'resolution',
+            'keywords'
+        ):
+            doc[prop] = ticket[prop]
+        for provider in self.providers:
+            try:
+                provider.upsert_document(doc)
+            except AccessTokenBackendException, e:
+                self.log.error('SearchBackendException: %s' % e)
 
-	def ticket_deleted(self, ticket):
-		identifier = 'ticket_%s' % (ticket.id)
-		for provider in self.providers:
-			try:
-				provider.delete_document(identifier)
-			except AccessTokenBackendException, e:
-				self.log.error('SearchBackendException: %s' % e)
+    def ticket_deleted(self, ticket):
+        identifier = 'ticket_%s' % (ticket.id)
+        for provider in self.providers:
+            try:
+                provider.delete_document(identifier)
+            except AccessTokenBackendException, e:
+                self.log.error('SearchBackendException: %s' % e)
 
-	def ticket_changed(self, ticket, comment, author, old_values):
+    def ticket_changed(self, ticket, comment, author, old_values):
         self.ticket_created(ticket)
 
-	def ticket_comment_modified(self, ticket, cdate, author, comment, old_comment):
+    def ticket_comment_modified(self, ticket, cdate, author, comment, old_comment):
         self.ticket_created(ticket)
 
-	def ticket_change_deleted(self, ticket, cdate, changes):
+    def ticket_change_deleted(self, ticket, cdate, changes):
         self.ticket_created(ticket)
 
-	def _get_groups(self, user):
-	    groups = set([user])
-	    for provider in self.group_providers:
-    		for group in provider.get_permission_groups(user):
-    		    groups.add(group)
+    def _get_groups(self, user):
+        groups = set([user])
+        for provider in self.group_providers:
+            for group in provider.get_permission_groups(user):
+                groups.add(group)
 
             #groups += PermissionSystem(self.env).get_user_permissions(user)
 
-	    perms = PermissionSystem(self.env).get_user_permission(user)
-	    repeat = True
-	    while repeat:
-		repeat = False
-		for subject, action in perms:
-		    if subject in groups and not action.isupper() and action not in groups:
-			groups.add(action)
-			repeat = True
+        perms = PermissionSystem(self.env).get_user_permission(user)
+        repeat = True
+        while repeat:
+        repeat = False
+        for subject, action in perms:
+            if subject in groups and not action.isupper() and action not in groups:
+            groups.add(action)
+            repeat = True
 
-	    return groups
+        return groups
 
 class StartPoints(object):
     """Format and parse start points for search."""
