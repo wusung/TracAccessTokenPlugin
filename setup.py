@@ -16,7 +16,7 @@ if sys.version_info[:4] < (2, 6):
 
 CLASSIFIERS = [
     'Framework :: Trac',
-    'Development Status :: 4 - Release',
+    'Development Status :: Development',
     'Environment :: Web Environment',
     'Intended Audience :: Developers',
     'Operating System :: OS Independent',
@@ -30,10 +30,10 @@ setup(name=PACKAGE,
                 'in a full text search engine and search it from a button '
                 'in the main navbar.',
     classifiers=CLASSIFIERS,
-    keywords=['trac', 'plugin', 'access token'],
+    keywords=['trac plugin', 'access token'],
     author='Wusung Peng',
     author_email='wusungpeng@kkbox.com',
-    url="https://github.com/wusung/TracAdvancedSearchPlugin",
+    url="https://gitlab.com/wusung/tracauthtokenplugin.git",
     license='SEE LICENSE',
     platforms=['linux', 'osx', 'unix', 'win32'],
     packages=[PACKAGE],
