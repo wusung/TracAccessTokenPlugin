@@ -1,7 +1,7 @@
 """
 accesstoken.py - Advanced Access Token Generator Plugin for Trac
 
-This module defines a Trac extension point for the access token generator backend.
+This module defines a Trac extension point for generating access tokens backend.
 
 See TracTracAccessTokenBackend for more details.
 """
@@ -105,8 +105,8 @@ class AdvancedSearchPlugin(Component):
     implements(
         # INavigationContributor,
         # IPermissionRequestor,
-        # IRequestHandler,
-        # ITemplateProvider,
+        IRequestHandler,
+        ITemplateProvider,
         # ITicketChangeListener,
         # IWikiChangeListener,
         # IWikiSyntaxProvider,
@@ -150,6 +150,7 @@ class AdvancedSearchPlugin(Component):
         the active AdvancedSearchBackend.
         """
         req.perm.assert_permission('SEARCH_VIEW')
+        self.log.debug(req.perm.assert_permission('SEARCH_VIEW'))
 
         try:
             per_page = int(req.args.getfirst('per_page',
@@ -240,7 +241,7 @@ class AdvancedSearchPlugin(Component):
         add_stylesheet(req, PACKAGE + '/css/pikaday.css')
         add_script(req, PACKAGE + '/js/advsearch.js')
         add_script(req, PACKAGE + '/js/pikaday.js')
-        return 'tokens.html', data, None
+        return 'prefs_tokens.html', data, None
 
     def _merge_results(self, result_map, per_page):
         """
@@ -428,9 +429,19 @@ class AdvancedSearchPlugin(Component):
 
     # IPreferencePanelProvider methods
     def get_preference_panels(self, req):
-        yield ('scratchpad', _('Scratchpad'))
+        """
+        Implement IPreferencePanelProvider.get_preference_panels method
+
+        Add access token entry in Preferences
+        """
+        yield ('accesstoken', _('AccessToken'))
 
     def render_preference_panel(self, req, panel):
+        """
+        Implement IPreferencePanelProvider.render_preference_panel method
+
+        Add request handler for accesstoken POST request
+        """
         if req.method == 'POST':
             new_content = req.args.get('scratchpad_textarea')
             if new_content:
@@ -438,7 +449,7 @@ class AdvancedSearchPlugin(Component):
                 add_notice(req, _('Your Scratchpad text has been saved.'))
             req.redirect(req.href.prefs(panel or None))
 
-        return 'prefs_scratchpad.html', {
+        return 'prefs_tokens.html', {
             'scratchpad_text': req.session.get('scratchpad', 'your text')
         }
 
