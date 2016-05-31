@@ -21,8 +21,6 @@ from trac.ticket.api import ITicketChangeListener
 from trac.web.chrome import INavigationContributor
 from trac.web.chrome import ITemplateProvider
 from trac.web.main import IRequestHandler
-from trac.wiki.api import IWikiChangeListener
-from trac.wiki.api import IWikiSyntaxProvider
 from trac.prefs import IPreferencePanelProvider
 
 from genshi.builder import tag, Element
@@ -108,13 +106,12 @@ class AdvancedSearchPlugin(Component):
         IRequestHandler,
         ITemplateProvider,
         # ITicketChangeListener,
-        # IWikiChangeListener,
-        # IWikiSyntaxProvider,
         IPreferencePanelProvider
     )
     
     providers = ExtensionPoint(IAdvSearchBackend)
     group_providers = ExtensionPoint(IPermissionGroupProvider)
+    new_token = None
 
     DEFAULT_PER_PAGE = 15
 
@@ -320,58 +317,10 @@ class AdvancedSearchPlugin(Component):
 
     # ITemplateProvider methods
     def get_htdocs_dirs(self):
-        return [('advsearch', pkg_resources.resource_filename(__name__, 'htdocs'))]
+        return [('tracauthtoken', pkg_resources.resource_filename(__name__, 'htdocs'))]
 
     def get_templates_dirs(self):
         return [pkg_resources.resource_filename(__name__, 'templates')]
-
-    # IWikiSyntaxProvider methods
-    def get_wiki_syntax(self):
-        return []
-
-    def get_link_resolvers(self):
-        yield ('advsearch', self._format_link)
-
-    def _format_link(self, formatter, ns, target, label):
-        path, query, fragment = formatter.split_link(target)
-        if query:
-            href = formatter.href.advsearch() + query.replace(' ', '+')
-        else:
-            href = target
-        return tag.a(label, class_='search', href=href)
-
-    # IWikiChangeListener methods
-    def _update_wiki_page(self, page):
-        doc = {
-            'source': 'wiki',
-            'id': 'wiki_%s' % page.name,
-        }
-        for prop in ('name', 'version', 'time', 'author', 'text', 'comment'):
-            doc[prop] = getattr(page, prop)
-        for provider in self.providers:
-            try:
-                provider.upsert_document(doc)
-            except AccessTokenBackendException, e:
-                self.log.error('SearchBackendException: %s' % e)
-
-    def _delete_wiki_page(self, name):
-        identifier = 'wiki_%s' % (name)
-        for provider in self.providers:
-            try:
-                provider.delete_document(identifier)
-            except AccessTokenBackendException, e:
-                self.log.error('SearchBackendException: %s' % e)
-
-        wiki_page_added = _update_wiki_page
-        wiki_page_version_deleted = _update_wiki_page
-        wiki_page_deleted = lambda self, page: self._delete_wiki_page(page.name)
-
-    def wiki_page_changed(self, page, version, t, comment, author, ipnr):
-        self._update_wiki_page(page)
-
-    def wiki_page_renamed(self, page, old_name):
-        self._delete_wiki_page(old_name)
-        self._update_wiki_page(page)
 
     # ITicketChangeListener methods
     def ticket_created(self, ticket):
@@ -443,23 +392,24 @@ class AdvancedSearchPlugin(Component):
 
         Add request handler for accesstoken POST request
         """
+
+        add_stylesheet(req, PACKAGE + '/css/advsearch.css')
+        #add_stylesheet(req, PACKAGE + '/css/pikaday.css')
+        add_script(req, PACKAGE + '/js/advsearch.js')
+        #add_script(req, PACKAGE + '/js/pikaday.js')
+
+        new_token = []
         if req.method == 'POST':
             new_content = req.args.get('scratchpad_textarea')
-            new_token = req.args.get('token')
+            new_token = req.args.get('tokens')
+            #self.log.debug("render_preference_panel() " + new_token)
             if new_content:
                 req.session['scratchpad'] = new_content
                 add_notice(req, _('Your access tokens have been saved.'))
-            req.redirect(req.href.prefs(panel or None))
-
-        self.log.debug("render_preference_panel()")
-
-        # add_stylesheet(req, PACKAGE + '/css/advsearch.css')
-        # add_stylesheet(req, PACKAGE + '/css/pikaday.css')
-        # add_script(req, PACKAGE + '/js/advsearch.js')
-        # add_script(req, PACKAGE + '/js/pikaday.js')
-
+            #req.redirect(req.href.prefs(panel or None))
+        self.log.debug("*" * 30  + json.dumps(new_token))
         return 'prefs_tokens.html', {
-            'scratchpad_text': req.session.get('scratchpad', 'your text')
+            'tokens': new_token
         }
 
     def _get_groups(self, user):

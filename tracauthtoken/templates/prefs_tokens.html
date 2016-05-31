@@ -1,5 +1,4 @@
-<!DOCTYPE html
-    PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:py="http://genshi.edgewall.org/"
@@ -7,20 +6,36 @@
   <xi:include href="prefs.html" />
   <head>
     <title>Access Tokens</title>
+    <style type="text/css">
+
+      .jsgrid-button {
+        box-shadow: 0 0 0 0 #888 !important;
+      }
+      .jsgrid-delete-button {
+        background-position: 0 -80px !important;
+      }
+      .jsgrid-edit-button {
+        background-position: 0 -120px !important;
+      }
+      .jsgrid-update-button {
+        background-position: 0 -336px !important;
+      }
+    </style>
+    <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.4.1/jsgrid-theme.min.css" />
+    <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.4.1/jsgrid.min.css" />
+    <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.4.1/jsgrid-theme.min.css" />
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.4.1/jsgrid.min.js"></script>
   </head>
   <body>
-    <p><label>A Scratchpad text field:
-        <textarea rows="10" cols="40" name="scratchpad_textarea">
-          $scratchpad_text
-        </textarea>
+    <p>
+      <label>Token description
+        <input id="tokens" type="hidden" name="tokens" value="${tokens}" />
+        <input id="tokenDesc" name="tokenDesc" value="" />
+        <input type="button" id="newToken" name="newToken" value="Add" />
       </label>
     </p>
     <p>
-      <label>New Access Token
-        <input type="hidden" name="tokens" />
-        <input id="token" name="token" value="" />
-        <input type="button" id="newToken" name="newToken" value="Add" />
-      </label>
+      <div id="tokenGrid"></div>
     </p>
   </body>
 </html>
