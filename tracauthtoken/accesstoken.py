@@ -105,15 +105,16 @@ class AdvancedSearchPlugin(Component):
         # IPermissionRequestor,
         IRequestHandler,
         ITemplateProvider,
-        # ITicketChangeListener,
         IPreferencePanelProvider
     )
     
     providers = ExtensionPoint(IAdvSearchBackend)
     group_providers = ExtensionPoint(IPermissionGroupProvider)
-    new_token = None
 
     DEFAULT_PER_PAGE = 15
+
+    def __init__(self, arg=None):
+        self.new_token = None
 
     def _get_source_filters(self):
         return set(itertools.chain(*(p.get_sources() for p in self.providers)))
@@ -322,60 +323,6 @@ class AdvancedSearchPlugin(Component):
     def get_templates_dirs(self):
         return [pkg_resources.resource_filename(__name__, 'templates')]
 
-    # ITicketChangeListener methods
-    def ticket_created(self, ticket):
-        comments = [
-            change[4] for change in ticket.get_changelog()
-            if change[2] == 'comment'
-        ]
-        doc = {
-            'id': 'ticket_%s' % ticket.id,
-            'ticket_id': ticket.id,
-            'source': 'ticket',
-            'author': ticket['reporter'],
-            'ticket_version': ticket['version'],
-            'name': ticket['summary'],
-            'text': '%s %s' % (ticket['description'], ' '.join(comments)),
-            'description': '%s %s' % (ticket['description'], ' '.join(comments)),
-        }
-        for prop in (
-            'type',
-            'time',
-            'changetime',
-            'cc',
-            'component',
-            'severity',
-            'priority',
-            'owner',
-            'milestone',
-            'status',
-            'resolution',
-            'keywords'
-        ):
-            doc[prop] = ticket[prop]
-        for provider in self.providers:
-            try:
-                provider.upsert_document(doc)
-            except AccessTokenBackendException, e:
-                self.log.error('SearchBackendException: %s' % e)
-
-    def ticket_deleted(self, ticket):
-        identifier = 'ticket_%s' % (ticket.id)
-        for provider in self.providers:
-            try:
-                provider.delete_document(identifier)
-            except AccessTokenBackendException, e:
-                self.log.error('SearchBackendException: %s' % e)
-
-    def ticket_changed(self, ticket, comment, author, old_values):
-        self.ticket_created(ticket)
-
-    def ticket_comment_modified(self, ticket, cdate, author, comment, old_comment):
-        self.ticket_created(ticket)
-
-    def ticket_change_deleted(self, ticket, cdate, changes):
-        self.ticket_created(ticket)
-
     # IPreferencePanelProvider methods
     def get_preference_panels(self, req):
         """
@@ -394,19 +341,13 @@ class AdvancedSearchPlugin(Component):
         """
 
         add_stylesheet(req, PACKAGE + '/css/advsearch.css')
-        #add_stylesheet(req, PACKAGE + '/css/pikaday.css')
         add_script(req, PACKAGE + '/js/advsearch.js')
-        #add_script(req, PACKAGE + '/js/pikaday.js')
 
         new_token = []
         if req.method == 'POST':
-            new_content = req.args.get('scratchpad_textarea')
             new_token = req.args.get('tokens')
-            #self.log.debug("render_preference_panel() " + new_token)
-            if new_content:
-                req.session['scratchpad'] = new_content
+            if new_token:
                 add_notice(req, _('Your access tokens have been saved.'))
-            #req.redirect(req.href.prefs(panel or None))
         self.log.debug("*" * 30  + json.dumps(new_token))
         return 'prefs_tokens.html', {
             'tokens': new_token
