@@ -67,3 +67,19 @@
 	font-size: 0.9em;
 	font-weight: normal;
 }
+
+.jsgrid-button {
+	box-shadow: 0 0 0 0 #888 !important;
+}
+
+.jsgrid-delete-button {
+	background-position: 0 -80px !important;
+}
+
+.jsgrid-edit-button {
+	background-position: 0 -120px !important;
+}
+
+.jsgrid-update-button {
+	background-position: 0 -336px !important;
+}

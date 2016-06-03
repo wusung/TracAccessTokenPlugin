@@ -99,7 +99,7 @@ class AccessTokenBackendException(Exception):
     """
 
 
-class AdvancedSearchPlugin(Component):
+class AccessTokenBackendPlugin(Component):
     implements(
         # INavigationContributor,
         # IPermissionRequestor,
