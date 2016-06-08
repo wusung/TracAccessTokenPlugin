@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 Backends for TracAdvancedSearchPlugin which implement IAdvSearchBackend.
 """

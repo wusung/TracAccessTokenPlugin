@@ -1,4 +1,7 @@
-from trac.core import Interface 
+# -*- coding: utf-8 -*-
+
+from trac.core import Interface
+
 
 class IAdvSearchBackend(Interface):
 	"""Interface to provides a search service."""

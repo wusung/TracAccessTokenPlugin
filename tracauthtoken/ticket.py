@@ -4,6 +4,7 @@ from trac.core import *
 from trac.web.chrome import add_warning
 from trac.ticket.api import TicketSystem
 from trac.ticket.notification import TicketNotifyEmail
+from trac.ticket.model import Milestone, Ticket
 
 
 __all__ = ['TicketRPC']

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 """
 accesstoken.py - Advanced Access Token Generator Plugin for Trac
 
@@ -371,6 +373,7 @@ class AccessTokenBackendPlugin(Component):
                     repeat = True
 
         return groups
+
 
 class StartPoints(object):
     """Format and parse start points for search."""
