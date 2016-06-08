@@ -36,7 +36,7 @@ from trac.web.chrome import (
 from trac.ticket.model import Milestone, Ticket
 from trac.ticket.notification import TicketNotifyEmail
 
-from tracauthtoken.constants import NAME_RPC_TIMESTAMP
+from tracaccesstoken.constants import NAME_RPC_TIMESTAMP
 
 __all__ = ['TicketAPI']
 

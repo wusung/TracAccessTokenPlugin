@@ -41,7 +41,7 @@ from trac.wiki.formatter import extract_link
 
 import operator
 
-PACKAGE = 'tracauthtoken'
+PACKAGE = 'tracaccesstoken'
 CONFIG_SECTION_NAME = 'auth_token_plugin'
 CONFIG_FIELD = {
     'menu_label': (
@@ -320,7 +320,7 @@ class AccessTokenBackendPlugin(Component):
 
     # ITemplateProvider methods
     def get_htdocs_dirs(self):
-        return [('tracauthtoken', pkg_resources.resource_filename(__name__, 'htdocs'))]
+        return [('tracaccesstoken', pkg_resources.resource_filename(__name__, 'htdocs'))]
 
     def get_templates_dirs(self):
         return [pkg_resources.resource_filename(__name__, 'templates')]

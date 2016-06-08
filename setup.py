@@ -3,7 +3,7 @@ import sys
 
 from setuptools import setup
 
-PACKAGE = 'tracauthtoken'
+PACKAGE = 'tracaccesstoken'
 with open('VERSION') as f:
     VERSION = f.read().rstrip()
 
@@ -25,26 +25,26 @@ CLASSIFIERS = [
 ]
 
 setup(name=PACKAGE,
-    version=VERSION,
-    description='This plugin allows you to index your wiki and ticket data '
-                'in a full text search engine and search it from a button '
-                'in the main navbar.',
-    classifiers=CLASSIFIERS,
-    keywords=['trac plugin', 'access token'],
-    author='Wusung Peng',
-    author_email='wusungpeng@kkbox.com',
-    url="https://gitlab.com/wusung/tracauthtokenplugin.git",
-    license='SEE LICENSE',
-    platforms=['linux', 'osx', 'unix', 'win32'],
-    packages=[PACKAGE],
-    entry_points={'trac.plugins': '%s = tracauthtoken' % PACKAGE},
-    package_data={
-        'tracauthtoken/': [
-            'templates/*.html',
-            'htdocs/css/*.css',
-            'htdocs/js/*.js'
-        ]
-    },
-    include_package_data=True,
-    install_requires=REQUIRES,
-)
+      version=VERSION,
+      description='This plugin allows you to index your wiki and ticket data '
+                  'in a full text search engine and search it from a button '
+                  'in the main navbar.',
+      classifiers=CLASSIFIERS,
+      keywords=['trac plugin', 'access token'],
+      author='Wusung Peng',
+      author_email='wusungpeng@kkbox.com',
+      url="https://gitlab.com/wusung/tracauthtokenplugin.git",
+      license='SEE LICENSE',
+      platforms=['linux', 'osx', 'unix', 'win32'],
+      packages=[PACKAGE],
+      entry_points={'trac.plugins': '%s = tracaccesstoken' % PACKAGE},
+      package_data={
+          'tracaccesstoken/': [
+              'templates/*.html',
+              'htdocs/css/*.css',
+              'htdocs/js/*.js'
+          ]
+      },
+      include_package_data=True,
+      install_requires=REQUIRES,
+      )
