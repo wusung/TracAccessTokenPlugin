@@ -31,5 +31,6 @@ tag:
 	git commit -m "chore: Bump to v$(VERSION)"
 	git push origin $(BRANCH)
 
-server:
+s server tracd start-tracd: start-server
+start-server:
 	tracd -r --port 8001 -b 0.0.0.0 $(TRACD_CONFIG_PATH)
