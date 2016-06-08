@@ -26,7 +26,7 @@ CLASSIFIERS = [
 
 setup(name=PACKAGE,
       version=VERSION,
-      description='This plugin allows you to index your wiki and ticket data '
+      description='This plugin allows you to maintain the auth token in trac web. '
                   'in a full text search engine and search it from a button '
                   'in the main navbar.',
       classifiers=CLASSIFIERS,

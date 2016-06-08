@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 """
-accesstoken.py - Advanced Access Token Generator Plugin for Trac
+web_ui.py - Advanced Access Token Generator Plugin for Trac
 
 This module defines a Trac extension point for generating access tokens backend.
 

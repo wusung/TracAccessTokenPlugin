@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from accesstoken import AccessTokenBackendException
-#from accesstoken import AdvancedSearchPlugin
-from accesstoken import AccessTokenBackendPlugin
-from interface import IAdvSearchBackend
+from web_ui import AccessTokenBackendException
+from web_ui import AccessTokenBackendPlugin
 from api import TicketAPI
