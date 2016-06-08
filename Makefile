@@ -6,7 +6,7 @@ init:
 	pip install -r requirements.txt
 
 clean:
-	rm -rf build tracauthtoken.egg-info dist
+	rm -rf build tracaccesstoken.egg-info dist
 
 build:
 	python setup.py bdist_egg

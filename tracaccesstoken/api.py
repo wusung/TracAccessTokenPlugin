@@ -42,6 +42,7 @@ __all__ = ['TicketAPI']
 
 
 class TicketAPI(Component):
+    """ An interface to Trac's ticketing system. """
     implements(
         IRequestHandler,
         # ITemplateProvider,
