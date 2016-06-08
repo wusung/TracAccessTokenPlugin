@@ -74,7 +74,6 @@ class TicketAPI(Component):
                 req.write(json.dumps(content))
                 return None
 
-            # Read request body
             try:
                 ticket_id = self._create(req)
                 content = {
@@ -109,6 +108,8 @@ class TicketAPI(Component):
         Overriding 'when' requires admin permission. """
 
         content_len = int(req.get_header('content-length') or 0)
+
+        # Read request body
         post_body = json.loads(req.read(content_len))
         self.log.debug('BODY=%s' % post_body)
 
