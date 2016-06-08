@@ -60,18 +60,19 @@ class TicketAPI(Component):
     def _process_new_ticket_request(self, req):
         if req.method == 'POST':
             content_type = req.get_header('Content-Type') or 'application/json'
-            #req.perm(self.realm).require('TICKET_CREATE')
 
-            #ticket = Ticket(self.env)
-
-            #plain_fields = True  # support for /newticket?version=0.11 GETs
-            #field_reporter = 'reporter'
-
-            #self._populate(req, ticket, plain_fields)
-
-            #reporter_id = req.args.get(field_reporter) or \
-            #              get_reporter_id(req, 'author')
-            #ticket['reporter'] = reporter_id
+            if 'TICKET_CREATE' not in req.perm:
+                content = {
+                    'message': 'forbidden',
+                    'description': "%s privileges are required to perform this operation. "
+                                   "You don't have the required permissions." % 'TICKET_CREATE'
+                }
+                req.send_response(403)
+                req.send_header('Content-Type', content_type)
+                req.send_header('Content-Length', len(json.dumps(content)))
+                req.end_headers()
+                req.write(json.dumps(content))
+                return None
 
             # Read request body
             try:
@@ -81,14 +82,14 @@ class TicketAPI(Component):
                 }
                 req.send_response(201)
             except ValueError as ex:
-                self.log.error('json.loads() failed. %s', ex)
+                self.log.error('_create() failed. %s', ex)
                 content = {
                     'message': 'invalid_json_value',
                     'description': 'Invalid request body'
                 }
                 req.send_response(400)
             except Exception as ex:
-                self.log.error('json.loads() failed. %s', ex)
+                self.log.error('_create() failed. %s', ex)
                 content = {
                     'message': 'invalid_json_value',
                     'description': 'Invalid request body'
