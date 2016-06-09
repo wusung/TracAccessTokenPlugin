@@ -111,9 +111,6 @@ class AccessTokenBackendPlugin(Component):
 
     group_providers = ExtensionPoint(IPermissionGroupProvider)
 
-    def __init__(self, arg=None):
-        self.new_token = None
-
     # IPermissionRequestor methods
     def get_permission_actions(self):
         return ['SEARCH_VIEW']
