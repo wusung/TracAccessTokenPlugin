@@ -1,11 +1,9 @@
 
-Trac Advanced Search Plugin
-============================
+Trac Personal Access Tokens Plugin
+==================================
 
 An advanced search plugin for the open source Trac project
-(http://trac.edgewall.org/). This Trac plugin allows you to use a full-text
-search engine (such as Apache Solr) as the search backend for performing
-search in Trac.  This plugin also includes a backend for Elasticsearch
+(http://trac.edgewall.org/). This Trac plugin allows you to generate personal access token in Trac.  This plugin also includes a backend for Elasticsearch
 (https://www.elastic.co/products/elasticsearch), but other plugins can use the extension point
 provided by this plugin to query a different backend.
 
@@ -52,17 +50,16 @@ This assumes you already have a Trac environment setup.
 
 1. Build and install the plugin
 ```
-cd plugin-src
+cd tracauthtokenplugin
 python setup.py bdist_egg
-cp ./dist/TracAdvancedSearch-*.egg <trac_environment_home>/plugins
+cp ./dist/tracaccesstoken-*.egg <trac_environment_home>/plugins
 ```
 
 2. Configure your trac.ini (see the Configuration section below).
 
-3. Restart the trac server. This will differ based on how you are running trac
-(apache, tracd, etc).
+3. Restart the trac server. This will differ based on how you are running trac (apache, tracd, etc).
 
-That's it. You should see an Advanced Search button in the main navbar.
+That's it. You should see an Access Token menu in the your preference.
 
 
 
