@@ -37,8 +37,11 @@ from trac.util.presentation import Paginator
 from trac.util.translation import _
 from trac.web.chrome import add_stylesheet, add_warning, add_script, add_notice
 from trac.wiki.formatter import extract_link
+from trac.util.datefmt import to_utimestamp, datetime_now, utc
 
 import operator
+import hashlib
+import pprint
 
 PACKAGE = 'tracaccesstoken'
 CONFIG_SECTION_NAME = 'auth_token_plugin'
@@ -142,12 +145,84 @@ class AccessTokenBackendPlugin(Component):
         add_stylesheet(req, PACKAGE + '/css/advsearch.css')
         add_script(req, PACKAGE + '/js/advsearch.js')
 
+        content_type = req.get_header('Content-Type') or 'application/json'
         new_token = []
         if req.method == 'POST':
-            new_token = req.args.get('tokens')
-            if new_token:
-                add_notice(req, _('Your access tokens have been saved.'))
-        self.log.debug("*" * 30  + json.dumps(new_token))
+            if content_type == 'text/html':
+                new_token = req.args.get('tokens')
+                if new_token:
+                    tokens = json.loads(new_token)
+                    with self.env.db_transaction as db:
+                        for t in tokens:
+                            db(
+                                "INSERT INTO kkbox_trac_access_token ("
+                                "username, access_token, description, change_time, create_time) "
+                                "VALUES (%s,%s,%s,%s,%s)",
+                                (req.authname,
+                                 hashlib.sha224(t['accessToken']).hexdigest(),
+                                 t['description'],
+                                 datetime_now(utc),
+                                 datetime_now(utc)))
+                    self.env.log.info("New access token for %s", req.authname)
+                    add_notice(req, _('Your access tokens have been saved.'))
+            else:
+                # Read request body
+                content_len = int(req.get_header('content-length') or 0)
+                new_token = json.loads(req.read(content_len))
+                if new_token:
+                    with self.env.db_transaction as db:
+                        c = db.cursor()
+                        t = new_token
+                        db(
+                            "INSERT INTO kkbox_trac_access_token ("
+                            "username, access_token, description, change_time, create_time) "
+                            "VALUES (%s,%s,%s,%s,%s)",
+                            (req.authname,
+                             hashlib.sha224(t['accessToken']).hexdigest(),
+                             t['description'],
+                             datetime_now(utc),
+                             datetime_now(utc)))
+                    self.env.log.info("New access token for %s at %s" %
+                                      (req.authname, datetime_now(utc)))
+        elif req.method == 'DELETE':
+            if 'token_id' in req.query_string:
+                token_id = req.query_string.replace('token_id=', '')
+                with self.env.db_transaction as db:
+                    db("""DELETE FROM kkbox_trac_access_token
+                          WHERE id=%s""", (token_id,))
+                self.env.log.info("Delete access token id=%s", token_id)
+
+        elif req.method == 'PUT':
+            if 'token_id' in req.query_string:
+                token_id = req.query_string.replace('token_id=', '')
+                content_len = int(req.get_header('content-length') or 0)
+                body = json.loads(req.read(content_len))
+                change_time = datetime_now(utc)
+                with self.env.db_transaction as db:
+                    db("""UPDATE kkbox_trac_access_token
+                          SET description=%s,
+                              change_time=%s
+                          WHERE id=%s""", (body['description'], change_time, token_id, ))
+                    self.env.log.info("Update access token for %s id=%s at %s" %
+                                      (req.authname, token_id, change_time))
+        elif req.method == 'GET':
+            def _from_database(id_, access_token, description_, create_time):
+                return {
+                    'id': id_,
+                    'accessToken': access_token,
+                    'description': description_,
+                    'creationTime': create_time
+                }
+
+            for row in self.env.db_query("""
+                SELECT id AS id_, access_token, description, create_time
+                FROM kkbox_trac_access_token
+                WHERE username=%s
+                ORDER BY create_time DESC
+                """, (req.authname,)):
+                new_token.append(_from_database(*row))
+            new_token = json.dumps(new_token)
+            self.env.log.info("New access token for %s", new_token)
         return 'prefs_tokens.html', {
             'tokens': new_token
         }

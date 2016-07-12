@@ -10,13 +10,17 @@
     <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.4.1/jsgrid.min.css" />
     <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.4.1/jsgrid-theme.min.css" />
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.4.1/jsgrid.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.5.12/clipboard.min.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/components/core-min.js"></script>
   </head>
   <body>
     <p>
       <label>Token description
         <input id="tokens" type="hidden" name="tokens" value="${tokens}" />
         <input id="tokenDesc" name="tokenDesc" value="" />
-        <input type="button" id="newToken" name="newToken" value="Add" />
+        <input type="button" id="newToken" name="newToken" value="Generate New Token" />
+        <input id="clipboard" type="text" style="width: 250px" />
+        <input id="copy1" class="btn" type="button" value="Copy to clipboard" data-clipboard-demo="" data-clipboard-target="#clipboard" />
       </label>
     </p>
     <p>

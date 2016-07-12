@@ -7,9 +7,10 @@ from trac.db import Table, Column, Index, DatabaseManager
 from trac.env import Environment
 
 schema = [
-    Table('kkbox_trac_api_key', key='id')[
+    Table('kkbox_trac_access_token', key='id')[
         Column('id', auto_increment=True),
-        Column('key'),
+        Column('access_token'),
+        Column('description'),
         Column('username'),
         Column('change_time', type='int64'),
         Column('create_time', type='int64')
