@@ -5,12 +5,15 @@ TRACD_CONFIG_PATH = ../test
 init:
 	pip install -r requirements.txt
 
+.PHONY: clean
 clean:
 	rm -rf build tracaccesstoken.egg-info dist
 
+.PHONY: build
 build:
 	python setup.py bdist_egg
 
+.PHONY: rebuild
 rebuild: clean build
 
 patch: 
