@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import hashlib
 import json
 import re
 
@@ -58,6 +59,9 @@ class TicketAPI(Component):
 
     # Internal methods
 
+    def _authorization(self, req):
+        return req.args.get('Authorization') or req.get_header('Authorization')
+
     def _process_new_ticket_request(self, req):
         if req.method == 'POST':
             content_type = req.get_header('Content-Type') or 'application/json'
@@ -75,8 +79,43 @@ class TicketAPI(Component):
                 req.write(json.dumps(content))
                 return None
 
+            authorization = self._authorization(req)
+            if not authorization:
+                content = {
+                    'message': 'Unauthorized',
+                    'description': "The access token is incorrect."
+                }
+                req.send_response(401)
+                req.send_header('Content-Type', content_type)
+                req.send_header('Content-Length', len(json.dumps(content)))
+                req.end_headers()
+                req.write(json.dumps(content))
+                return None
+            else:
+                access_token = str(authorization).lower().replace('token ', '').upper()
+                self.log.info(access_token)
+                authname = ''
+                for username in self.env.db_query("""
+                    SELECT username
+                    FROM kkbox_trac_access_token
+                    WHERE access_token=%s
+                    ORDER BY create_time DESC
+                    """, (hashlib.sha224(access_token).hexdigest(),)):
+                    authname = username
+                if not authname:
+                    content = {
+                        'message': 'Unauthorized',
+                        'description': "The access token is incorrect."
+                    }
+                    req.send_response(401)
+                    req.send_header('Content-Type', content_type)
+                    req.send_header('Content-Length', len(json.dumps(content)))
+                    req.end_headers()
+                    req.write(json.dumps(content))
+                    return None
+
             try:
-                ticket_id = self._create(req)
+                ticket_id = self._create(req, authname)
                 content = {
                     'result': ticket_id
                 }
@@ -104,7 +143,7 @@ class TicketAPI(Component):
         else:
             pass
 
-    def _create(self, req):
+    def _create(self, req, authname_):
         """ Create a new ticket, returning the ticket ID.
         Overriding 'when' requires admin permission. """
 
@@ -117,8 +156,8 @@ class TicketAPI(Component):
         # Prepare props
         summary = post_body['summary'] or ''
         description = ''
-        author = post_body['author'] or req.authname
-        reporter = post_body['reporter'] or req.authname
+        author = post_body['author'] or authname_
+        reporter = post_body['reporter'] or authname_
         attributes = {}
         for key, value in post_body.iteritems():
             attributes[key] = value
