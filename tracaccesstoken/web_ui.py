@@ -143,6 +143,7 @@ class AccessTokenBackendPlugin(Component):
         """
 
         add_stylesheet(req, PACKAGE + '/css/advsearch.css')
+        add_script(req, PACKAGE + '/js/hat.js')
         add_script(req, PACKAGE + '/js/advsearch.js')
 
         content_type = req.get_header('Content-Type') or 'application/json'

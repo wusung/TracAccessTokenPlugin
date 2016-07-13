@@ -141,10 +141,12 @@ function saveState(db) {
 }
 
 Math.guid = function () {
-	return 'xxxxxxxxxxxx0xxxyxyxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-		var string = Math.random() * 16 | 0, v = c === 'x' ? string : (string & 0x3 | 0x8);
-		return string.toString(16);
-	}).toUpperCase();
+	// return 'xxxxxxxxxxxx0xxxyxyxxxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+	// 	var string = Math.random() * 16 | 0, v = c === 'x' ? string : (string & 0x3 | 0x8);
+	// 	return string.toString(16);
+	// }).toUpperCase();
+
+  return hat();
 };
 
 Date.prototype.yyyy_mm_ddTHH_mm_ss_sssZ = function() {

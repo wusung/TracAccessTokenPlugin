@@ -92,7 +92,7 @@ class TicketAPI(Component):
                 req.write(json.dumps(content))
                 return None
             else:
-                access_token = str(authorization).lower().replace('token ', '').upper()
+                access_token = str(authorization).replace('token ', '')
                 authname = ''
                 for username in self.env.db_query("""
                     SELECT username
