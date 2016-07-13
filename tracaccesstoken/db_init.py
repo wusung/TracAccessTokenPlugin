@@ -13,7 +13,8 @@ schema = [
         Column('description'),
         Column('username'),
         Column('change_time', type='int64'),
-        Column('create_time', type='int64')
+        Column('create_time', type='int64'),
+        Column('last_use_time', type='int64')
     ]
 ]
 
