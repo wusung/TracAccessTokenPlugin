@@ -82,7 +82,7 @@ class TicketAPI(Component):
             authorization = self._authorization(req)
             if not authorization:
                 content = {
-                    'message': 'Unauthorized',
+                    'message': 'Empty credentials',
                     'description': "The access token is incorrect."
                 }
                 req.send_response(401)
@@ -93,7 +93,6 @@ class TicketAPI(Component):
                 return None
             else:
                 access_token = str(authorization).lower().replace('token ', '').upper()
-                self.log.info(access_token)
                 authname = ''
                 for username in self.env.db_query("""
                     SELECT username
@@ -104,7 +103,7 @@ class TicketAPI(Component):
                     authname = username
                 if not authname:
                     content = {
-                        'message': 'Unauthorized',
+                        'message': 'Bad credentials',
                         'description': "The access token is incorrect."
                     }
                     req.send_response(401)
@@ -238,7 +237,7 @@ class TicketAPI(Component):
                               if 'MILESTONE_VIEW' in req.perm(m.resource)]
                 field['editable'] = milestones != []
                 groups = group_milestones(milestones, ticket.exists
-                    and 'TICKET_ADMIN' in req.perm(ticket.resource))
+                                          and 'TICKET_ADMIN' in req.perm(ticket.resource))
                 field['options'] = []
                 field['optgroups'] = [
                     {'label': label, 'options': [m.name for m in milestones]}
@@ -249,15 +248,15 @@ class TicketAPI(Component):
             elif name == 'cc':
                 cc_changed = field_changes is not None and 'cc' in field_changes
                 if ticket.exists and \
-                        'TICKET_EDIT_CC' not in req.perm(ticket.resource):
+                                'TICKET_EDIT_CC' not in req.perm(ticket.resource):
                     cc = ticket._old.get('cc', ticket['cc'])
                     cc_action, cc_entry, cc_list = self._toggle_cc(req, cc)
                     cc_update = 'cc_update' in req.args \
                                 and 'revert_cc' not in req.args
                     field['edit_label'] = {
-                            'add': _("Add to Cc"),
-                            'remove': _("Remove from Cc"),
-                            None: _("Cc")}[cc_action]
+                        'add': _("Add to Cc"),
+                        'remove': _("Remove from Cc"),
+                        None: _("Cc")}[cc_action]
                     field['cc_action'] = cc_action
                     field['cc_entry'] = cc_entry
                     field['cc_update'] = cc_update
@@ -284,7 +283,7 @@ class TicketAPI(Component):
                         optgroups.extend(x['options'])
                     if value and \
                             (value not in options and
-                             value not in optgroups):
+                                     value not in optgroups):
                         # Current ticket value must be visible,
                         # even if it's not among the possible values
                         options.append(value)
@@ -292,7 +291,7 @@ class TicketAPI(Component):
                 value = ticket[name]
                 if value in ('1', '0'):
                     field['rendered'] = self._query_link(req, name, value,
-                                _("yes") if value == '1' else _("no"))
+                                                         _("yes") if value == '1' else _("no"))
             elif type_ == 'text':
                 if field.get('format') == 'reference':
                     field['rendered'] = self._query_link(req, name,
