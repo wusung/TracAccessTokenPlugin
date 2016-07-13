@@ -116,7 +116,7 @@ class TicketAPI(Component):
             try:
                 ticket_id = self._create(req, authname)
                 content = {
-                    'result': ticket_id
+                    'ticket_id': ticket_id
                 }
                 req.send_response(201)
             except ValueError as ex:
