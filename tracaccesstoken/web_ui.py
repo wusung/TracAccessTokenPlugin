@@ -8,40 +8,26 @@ This module defines a Trac extension point for generating access tokens backend.
 See TracTracAccessTokenBackend for more details.
 """
 
-import itertools
-from operator import itemgetter
 import pkg_resources
-import re
 
 try:
     import simplejson as json
 except ImportError:
     import json
 
-from trac.perm import IPermissionRequestor
-from trac.ticket.api import ITicketChangeListener
-from trac.web.chrome import INavigationContributor
 from trac.web.chrome import ITemplateProvider
-from trac.web.main import IRequestHandler
 from trac.prefs import IPreferencePanelProvider
 
-from genshi.builder import tag, Element
 from trac.core import Component
 from trac.core import ExtensionPoint
 from trac.core import implements
-from trac.mimeview import Context
-from trac.perm import PermissionSystem
 from trac.perm import IPermissionGroupProvider
-from trac.util.html import html
-from trac.util.presentation import Paginator
 from trac.util.translation import _
-from trac.web.chrome import add_stylesheet, add_warning, add_script, add_notice
-from trac.wiki.formatter import extract_link
-from trac.util.datefmt import to_utimestamp, datetime_now, utc
+from trac.web.chrome import add_stylesheet, add_script, add_notice
+from trac.util.datefmt import datetime_now, utc
 
 import operator
 import hashlib
-import pprint
 
 PACKAGE = 'tracaccesstoken'
 CONFIG_SECTION_NAME = 'auth_token_plugin'

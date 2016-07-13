@@ -3,39 +3,22 @@
 import hashlib
 import json
 import re
-
 from datetime import datetime
+
 from trac.core import *
-from trac.web.chrome import add_warning
-from trac.web.api import (
-    RequestDone, HTTPUnsupportedMediaType, HTTPInternalError,
-    HTTP_STATUS
-)
-from trac.web.main import IRequestHandler
-from trac.web.chrome import (
-    ITemplateProvider,
-    INavigationContributor,
-    add_stylesheet,
-    add_script,
-    add_ctxtnav
-)
-from trac.util import as_bool, get_reporter_id, lazy
-from trac.util.datefmt import (
-    datetime_now, format_date_or_datetime, from_utimestamp,
-    get_date_format_hint, get_datetime_format_hint, parse_date, to_utimestamp,
-    user_time, utc, to_timestamp, to_datetime
-)
-from trac.util.text import (
-    exception_to_unicode, empty, is_obfuscated, shorten_line
-)
-from trac.web.chrome import (
-    Chrome, INavigationContributor, ITemplateProvider,
-    add_ctxtnav, add_link, add_notice, add_script, add_script_data,
-    add_stylesheet, add_warning, auth_link, chrome_info_script, prevnext_nav,
-    web_context
-)
 from trac.ticket.model import Milestone, Ticket
 from trac.ticket.notification import TicketNotifyEmail
+from trac.util.datefmt import (
+    format_date_or_datetime, get_date_format_hint, get_datetime_format_hint, to_utimestamp,
+    user_time, utc, to_datetime
+)
+from trac.util.text import (
+    empty
+)
+from trac.web.chrome import (
+    web_context
+)
+from trac.web.main import IRequestHandler
 
 from tracaccesstoken.constants import NAME_RPC_TIMESTAMP
 
