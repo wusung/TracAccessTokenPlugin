@@ -59,7 +59,8 @@ class TicketAPI(Component):
 
     # Internal methods
 
-    def _authorization(self, req):
+    @staticmethod
+    def _authorization(req):
         return req.args.get('Authorization') or req.get_header('Authorization')
 
     def _process_new_ticket_request(self, req):
@@ -317,25 +318,3 @@ class TicketAPI(Component):
             fields.append(field)
 
         return fields
-
-    def process_request_old(self, req):
-        if req.method == 'POST':
-            content_type = req.get_header('Content-Type') or 'text/html'
-
-        protocol = req.args.get('protocol', None)
-        content_type = req.get_header('Content-Type') or 'text/html'
-        if protocol:
-            # Perform the method call
-            self.log.debug("RPC incoming request of content type '%s' "
-                           "dispatched to %s" % (content_type, repr(protocol)))
-            self._rpc_process(req, protocol, content_type)
-        elif accepts_mimetype(req, 'text/html') \
-                or content_type.startswith('text/html'):
-            return self._dump_docs(req)
-        else:
-            # Attempt at API call gone wrong. Raise a plain-text 415 error
-            body = "No protocol matching Content-Type '%s' at path '%s'." % (
-                content_type, req.path_info)
-            self.log.error(body)
-            req.send_error(None, template='', content_type='text/plain',
-                           status=HTTPUnsupportedMediaType.code, env=None, data=body)
