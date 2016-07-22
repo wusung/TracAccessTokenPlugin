@@ -2,21 +2,13 @@
 Trac Personal Access Tokens Plugin
 ==================================
 
-An advanced search plugin for the open source Trac project
-(http://trac.edgewall.org/). This Trac plugin allows you to generate personal access token in Trac.  This plugin also includes a backend for Elasticsearch
-(https://www.elastic.co/products/elasticsearch), but other plugins can use the extension point
-provided by this plugin to query a different backend.
-
-This plugin is known to be compatible with Trac 0.12 with Elasticsearch 2, as well as
-Trac 1.0.11 with Elasticsearch 2.3.2.
-
-See the interface in `plugin-src/advsearch/interface.py` for details about which
-methods to implement.
+An personal access tokens plugin for the open source Trac project
+(http://trac.edgewall.org/). This Trac plugin allows you to generate personal access token in Trac. 
+This plugin also allow you to insert tickets with the generating key. 
 
 See http://trac.edgewall.org/wiki/TracDev for more information about developing
 a Trac plugin.
 
-![Advanced Search Plugin Screenshot][screenshot]
 
 How it works
 ------------
@@ -28,19 +20,30 @@ tickets are added `upsert_document()` will be called on each search backend
 to update the index immediately.
 
 
+How to use
+----------
+
+```
+curl -X POST -H "Content-Type: application/json" -H "Authorization: token 6d9ccb0856a527bf47a845c103d55191" -H "Cache-Control: no-cache" -H "Postman-Token: 1fb79357-1b3a-c2ee-df79-7bd873438d87" -d '{
+  "summary": "Trac 是否可以接外部的 Search Engine",
+  "description": "讓搜尋速度變快這點還蠻重要的...",
+  "author": "bot",
+  "reporter": "gslin",
+  "owner": "wusugnpeng",
+  "notify": "true",
+  "cc": "tingwu"
+}' "http://127.0.0.1:8001/test/api/tickets"
+```
+
+
+Limitation
+----------
+The API only allow the `TICKET_ADMIN` users to assign author and creation time. 
+
 
 Project Status
 --------------
 Stable, and active.
-
-
-Requirements
-------------
-
-The following python packages are required for the Elasticsearch backend.
-
-Python client for Elasticsearch (https://pypi.python.org/pypi/elasticsearch)
-
 
 
 Installation
@@ -50,7 +53,7 @@ This assumes you already have a Trac environment setup.
 
 1. Build and install the plugin
 ```
-cd tracauthtokenplugin
+cd tracaccesstokenplugin
 python setup.py bdist_egg
 cp ./dist/tracaccesstoken-*.egg <trac_environment_home>/plugins
 ```
@@ -58,6 +61,11 @@ cp ./dist/tracaccesstoken-*.egg <trac_environment_home>/plugins
 2. Configure your trac.ini (see the Configuration section below).
 
 3. Restart the trac server. This will differ based on how you are running trac (apache, tracd, etc).
+
+4. Create the new tables for the plugin.
+```
+python db_init.py <trac_environment_home>
+```
 
 That's it. You should see an Access Token menu in the your preference.
 
@@ -70,47 +78,19 @@ In `trac.ini` you'll need to configure whichever search backend you're using.  I
 you're using the default elasticsearch  backend, add something like this:
 
 ```
-[advanced_search_backend]
-elastic_search_url = http://localhost:9200/
-timeout = 30
-
-[advanced_search_plugin]
-menu_label = Advanced Search
+[access_token_plugin]
+menu_label = Access Tokens
 ```
 
-button_label and timeout are both optional.
-
-For *insensitive_group*, which means users in these groups will be granted to query the tickets only if he/she is reporter, ticket owner, or in cc list.
-
-For *sensitive_keyword* sets to secret, which means the tickets with keyword *secret* only can be viewed or searched by the owner, reporter, TRAC_ADMIN or in cc list. 
-```
-[advanced_search_backend]
-
-insensitive_group = intern,outsourcing
-sensitive_keyword = secret
-```
-
-*insensitive_group* and *sensitive_keyword* are both optional. The fault value of insensitive_group is 'intern,outsourcing'. The default value of sensitive_keyword is 'secret'.
+button_label is optional.
 
 
 You'll also need to enable the components.
 
 ```
 [components]
-tracadvsearch.advsearch.* = enabled
-tracadvsearch.esbackend.* = enabled
-```
-
-
-Remove Search button
---------------------
-
-To disable the old search add the following to `<project_env>/conf/trac.ini`.
-Your `trac.ini` may already have a components section.
-
-```
-[components]
-trac.search.web_ui.SearchModule = disabled
+tracaccesstoken.web_ui.* = enabled
+tracaccesstoken.api.* = enabled
 ```
 
 [screenshot]: https://raw.github.com/blampe/TracAdvancedSearchPlugin/gh-pages/example.png "Screenshot"
