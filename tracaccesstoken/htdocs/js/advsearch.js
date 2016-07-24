@@ -146,7 +146,7 @@ Math.guid = function () {
 	// 	return string.toString(16);
 	// }).toUpperCase();
 
-  return hat();
+  return hat(256);
 };
 
 Date.prototype.yyyy_mm_ddTHH_mm_ss_sssZ = function() {
