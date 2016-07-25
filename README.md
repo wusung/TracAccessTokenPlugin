@@ -22,18 +22,12 @@ How to use
 curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${access_token}" -H "Cache-Control: no-cache" -d '{
   "summary": "Trac 是否可以接外部的 Search Engine",
   "description": "讓搜尋速度變快這點還蠻重要的...",
-  "author": "bot",
   "reporter": "gslin",
   "owner": "wusugnpeng",
   "notify": "true",
   "cc": "tingwu"
 }' "http://127.0.0.1:8001/test/api/tickets"
 ```
-
-
-Limitation
-----------
-The API only allow the `TICKET_ADMIN` users to change author and creation time. 
 
 
 Project Status
