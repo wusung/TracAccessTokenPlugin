@@ -13,7 +13,8 @@ How to use
 ----------
 
 1. Create your personal access key in trac Preference>Access Tokens
-[screenshot]: https://github.com/wusung/tracauthtokenplugin/raw/master/tracaccesstoken/htdocs/img/example.png "Screenshot"
+![screenshot](https://github.com/wusung/tracauthtokenplugin/raw/master/tracaccesstoken/htdocs/img/example.png "Screenshot")
+
 
 2. Use the token in HTTP header. You can see the following codes.
 
