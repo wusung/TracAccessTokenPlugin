@@ -59,15 +59,15 @@ class TicketAPI(Component):
                 return
             else:
                 access_token = str(authorization).replace('token ', '').strip()
-                authname = ''
+                username = ''
                 for username in self.env.db_query("""
                     SELECT username
                     FROM kkbox_trac_access_token
                     WHERE access_token=%s
                     ORDER BY create_time DESC
                     """, (hashlib.sha224(access_token).hexdigest(),)):
-                    authname = username[0]
-                if not authname:
+                    username = username[0]
+                if not username:
                     content = {
                         'message': 'Bad credentials',
                         'description': "The access token is incorrect."
@@ -79,12 +79,12 @@ class TicketAPI(Component):
                     req.write(json.dumps(content))
                     return
 
-            allow_create_ticket = 'TICKET_CREATE' in self._get_groups(authname)
+            allow_create_ticket = 'TICKET_CREATE' in self._get_groups(username)
             if not allow_create_ticket:
                 content = {
                     'message': 'forbidden',
                     'description': "%s privileges are required to perform this operation for %s. "
-                                   "You don't have the required permissions." % ('TICKET_CREATE', authname)
+                                   "You don't have the required permissions." % ('TICKET_CREATE', username)
                 }
                 req.send_response(403)
                 req.send_header('Content-Type', content_type)
@@ -94,7 +94,7 @@ class TicketAPI(Component):
                 return
 
             try:
-                ticket_id = self._create(req, authname)
+                ticket_id = self._create(req, username)
                 content = {
                     'ticket_id': ticket_id
                 }
@@ -119,6 +119,7 @@ class TicketAPI(Component):
             req.send_header('Content-Length', len(json.dumps(content)))
             req.end_headers()
             req.write(json.dumps(content))
+            return
         else:
             pass
 
@@ -135,37 +136,43 @@ class TicketAPI(Component):
         # Prepare props
         summary = post_body['summary'] or ''
         description = ''
-        author = post_body['author']
-        reporter = post_body['reporter'] or authname_
+        #author = post_body['author']
+        #reporter = post_body['reporter'] or authname_
         attributes = {}
         for key, value in post_body.iteritems():
             attributes[key] = value
+        author = ''
+        if 'reporter' in post_body:
+            author = post_body['reporter']
         notify = False
         when = None
 
         # Validate inputs
         if not summary:
             raise ValueError('Empty field. Field name = summary')
-        if not author:
-            raise ValueError('Empty field. Field name = author')
+        #if not author:
+        #    raise ValueError('Empty field. Field name = author')
 
         # Prepare ticket
         t = Ticket(self.env)
         t['summary'] = summary
         t['description'] = description
-        t['reporter'] = reporter
         for k, v in attributes.iteritems():
             t[k] = v
         t['status'] = 'new'
         t['resolution'] = ''
+
         # custom author?
         if author and not (authname_ == 'anonymous' or 'TICKET_ADMIN' in self._get_groups(authname_)):
             # only allow custom author if anonymous is permitted or user is admin
             self.log.warn("RPC ticket.create: %r not allowed to change author "
                           "to %r for comment on #%s", authname_, author, t['ticket_id'])
             author = ''
+
+        t['reporter'] = author or authname_
         t['author'] = author or authname_
 
+        self.log.debug('%s %s', author, authname_)
         # custom create timestamp?
         when = when or getattr(req, NAME_RPC_TIMESTAMP, None)
         if when and 'TICKET_ADMIN' not in self._get_groups(authname_):
