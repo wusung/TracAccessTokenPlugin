@@ -159,7 +159,7 @@ class TicketAPI(Component):
         t['status'] = 'new'
         t['resolution'] = ''
         # custom author?
-        if author and (authname_ == 'anonymous' or 'TICKET_ADMIN' in self._get_groups(authname_)):
+        if author and not (authname_ == 'anonymous' or 'TICKET_ADMIN' in self._get_groups(authname_)):
             # only allow custom author if anonymous is permitted or user is admin
             self.log.warn("RPC ticket.create: %r not allowed to change author "
                           "to %r for comment on #%s", authname_, author, t['ticket_id'])
