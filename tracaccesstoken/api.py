@@ -56,7 +56,7 @@ class TicketAPI(Component):
                 req.send_header('Content-Length', len(json.dumps(content)))
                 req.end_headers()
                 req.write(json.dumps(content))
-                return None
+                return
             else:
                 access_token = str(authorization).replace('token ', '').strip()
                 authname = ''
@@ -66,7 +66,7 @@ class TicketAPI(Component):
                     WHERE access_token=%s
                     ORDER BY create_time DESC
                     """, (hashlib.sha224(access_token).hexdigest(),)):
-                    authname = username
+                    authname = username[0]
                 if not authname:
                     content = {
                         'message': 'Bad credentials',
@@ -77,21 +77,21 @@ class TicketAPI(Component):
                     req.send_header('Content-Length', len(json.dumps(content)))
                     req.end_headers()
                     req.write(json.dumps(content))
-                    return None
+                    return
 
             allow_create_ticket = 'TICKET_CREATE' in self._get_groups(authname)
-            if allow_create_ticket:
+            if not allow_create_ticket:
                 content = {
                     'message': 'forbidden',
-                    'description': "%s privileges are required to perform this operation. "
-                                   "You don't have the required permissions." % 'TICKET_CREATE'
+                    'description': "%s privileges are required to perform this operation for %s. "
+                                   "You don't have the required permissions." % ('TICKET_CREATE', authname)
                 }
                 req.send_response(403)
                 req.send_header('Content-Type', content_type)
                 req.send_header('Content-Length', len(json.dumps(content)))
                 req.end_headers()
                 req.write(json.dumps(content))
-                return None
+                return
 
             try:
                 ticket_id = self._create(req, authname)
@@ -135,7 +135,7 @@ class TicketAPI(Component):
         # Prepare props
         summary = post_body['summary'] or ''
         description = ''
-        author = post_body['author'] or authname_
+        author = post_body['author']
         reporter = post_body['reporter'] or authname_
         attributes = {}
         for key, value in post_body.iteritems():
@@ -159,20 +159,21 @@ class TicketAPI(Component):
         t['status'] = 'new'
         t['resolution'] = ''
         # custom author?
-        if author and not (authname_ == 'anonymous' or 'TICKET_ADMIN' in req.perm(t.resource)):
+        if author and not (authname_ == 'anonymous' or 'TICKET_ADMIN' in self._get_groups(authname_)):
             # only allow custom author if anonymous is permitted or user is admin
             self.log.warn("RPC ticket.create: %r not allowed to change author "
-                          "to %r for comment on #%d", authname_, author, id)
+                          "to %r for comment on #%s", authname_, author, t['ticket_id'])
             author = ''
         t['author'] = author or authname_
 
         # custom create timestamp?
         when = when or getattr(req, NAME_RPC_TIMESTAMP, None)
-        if when and 'TICKET_ADMIN' not in req.perm:
+        if when and 'TICKET_ADMIN' not in self._get_groups(authname_):
             self.log.warn("RPC ticket.create: %r not allowed to create with "
                           "non-current timestamp (%r)", authname_, when)
             when = None
         when = when or to_datetime(None, utc)
+        self.log.debug(t)
         t.insert(when=when)
         if notify:
             try:
@@ -184,19 +185,19 @@ class TicketAPI(Component):
         return t.id
 
     def _get_groups(self, user):
-        groups = set([user])
-        for provider in self.group_providers:
-            for group in provider.get_permission_groups(user):
-                groups.add(group)
-
-        perms = PermissionSystem(self.env).get_user_permissions(user)
-        repeat = True
-        while repeat:
-            repeat = False
-            for action in perms:
-                if action in groups and not action.isupper() and action not in groups:
-                    groups.add(action)
-                    repeat = True
-
-        self.log.debug(groups)
-        return groups
+        # groups = set([user])
+        # for provider in self.group_providers:
+        #     for group in provider.get_permission_groups(user):
+        #         groups.add(group)
+        #
+        # perms = PermissionSystem(self.env).get_user_permissions(user)
+        # repeat = True
+        # while repeat:
+        #     repeat = False
+        #     for action in perms:
+        #         if action in groups and not action.isupper() and action not in groups:
+        #             groups.add(action)
+        #             repeat = True
+        #
+        self.log.debug(PermissionSystem(self.env).get_user_permissions(user))
+        return PermissionSystem(self.env).get_user_permissions(user)
