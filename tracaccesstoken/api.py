@@ -189,7 +189,6 @@ class TicketAPI(Component):
             for group in provider.get_permission_groups(user):
                 groups.add(group)
 
-        self.log.info(groups)
         perms = PermissionSystem(self.env).get_user_permissions(user)
         repeat = True
         while repeat:
@@ -199,5 +198,5 @@ class TicketAPI(Component):
                     groups.add(action)
                     repeat = True
 
-        self.log.info(perms)
+        self.log.debug(groups)
         return groups
