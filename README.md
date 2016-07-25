@@ -1,4 +1,3 @@
-
 Trac Personal Access Tokens Plugin
 ==================================
 
@@ -10,21 +9,16 @@ See http://trac.edgewall.org/wiki/TracDev for more information about developing
 a Trac plugin.
 
 
-How it works
-------------
-
-Once your existing tickets/wiki documents are indexed in the backend you can
-make requests using the *Advanced Search* form.  These searches will be handled
-by the search backend you have configured in trac.ini.  When new documents or
-tickets are added `upsert_document()` will be called on each search backend
-to update the index immediately.
-
-
 How to use
 ----------
 
+1. Create your personal access key in trac Preference>Access Tokens
+[screenshot]: https://raw.github.com/wusung/tracaccesstoken/gh-pages/example.png "Screenshot"
+
+2. Use the token in HTTP header. You can see the following codes.
+
 ```
-curl -X POST -H "Content-Type: application/json" -H "Authorization: token 6d9ccb0856a527bf47a845c103d55191" -H "Cache-Control: no-cache" -H "Postman-Token: 1fb79357-1b3a-c2ee-df79-7bd873438d87" -d '{
+curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${access_token}" -H "Cache-Control: no-cache" -d '{
   "summary": "Trac 是否可以接外部的 Search Engine",
   "description": "讓搜尋速度變快這點還蠻重要的...",
   "author": "bot",
@@ -38,7 +32,7 @@ curl -X POST -H "Content-Type: application/json" -H "Authorization: token 6d9ccb
 
 Limitation
 ----------
-The API only allow the `TICKET_ADMIN` users to assign author and creation time. 
+The API only allow the `TICKET_ADMIN` users to change author and creation time. 
 
 
 Project Status
@@ -74,8 +68,8 @@ That's it. You should see an Access Token menu in the your preference.
 Configuration
 -------------
 
-In `trac.ini` you'll need to configure whichever search backend you're using.  If
-you're using the default elasticsearch  backend, add something like this:
+In `trac.ini` you can configure the menu name of access tokens plugin. If
+you're changing the default menu name of the plugin, add something like this:
 
 ```
 [access_token_plugin]
@@ -92,5 +86,3 @@ You'll also need to enable the components.
 tracaccesstoken.web_ui.* = enabled
 tracaccesstoken.api.* = enabled
 ```
-
-[screenshot]: https://raw.github.com/blampe/TracAdvancedSearchPlugin/gh-pages/example.png "Screenshot"
