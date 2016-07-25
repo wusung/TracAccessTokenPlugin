@@ -27,8 +27,7 @@ CLASSIFIERS = [
 setup(name=PACKAGE,
       version=VERSION,
       description='This plugin allows you to maintain the auth token in trac web. '
-                  'in a full text search engine and search it from a button '
-                  'in the main navbar.',
+                  'in the personal preferences.',
       classifiers=CLASSIFIERS,
       keywords=['trac plugin', 'access token'],
       author='Wusung Peng',
@@ -39,7 +38,7 @@ setup(name=PACKAGE,
       packages=[PACKAGE],
       entry_points={'trac.plugins': '%s = tracaccesstoken' % PACKAGE},
       package_data={
-          'tracaccesstoken/': [
+          'tracaccesstoken': [
               'templates/*.html',
               'htdocs/css/*.css',
               'htdocs/js/*.js'
