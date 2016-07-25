@@ -173,7 +173,6 @@ class TicketAPI(Component):
                           "non-current timestamp (%r)", authname_, when)
             when = None
         when = when or to_datetime(None, utc)
-        self.log.debug(t)
         t.insert(when=when)
         if notify:
             try:
