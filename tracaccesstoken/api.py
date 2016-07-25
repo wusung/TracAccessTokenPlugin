@@ -159,18 +159,18 @@ class TicketAPI(Component):
         t['status'] = 'new'
         t['resolution'] = ''
         # custom author?
-        if author and not (req.authname == 'anonymous' or 'TICKET_ADMIN' in req.perm(t.resource)):
+        if author and not (authname_ == 'anonymous' or 'TICKET_ADMIN' in req.perm(t.resource)):
             # only allow custom author if anonymous is permitted or user is admin
             self.log.warn("RPC ticket.create: %r not allowed to change author "
-                          "to %r for comment on #%d", req.authname, author, id)
+                          "to %r for comment on #%d", authname_, author, id)
             author = ''
-        t['author'] = author or req.authname
+        t['author'] = author or authname_
 
         # custom create timestamp?
         when = when or getattr(req, NAME_RPC_TIMESTAMP, None)
         if when and 'TICKET_ADMIN' not in req.perm:
             self.log.warn("RPC ticket.create: %r not allowed to create with "
-                          "non-current timestamp (%r)", req.authname, when)
+                          "non-current timestamp (%r)", authname_, when)
             when = None
         when = when or to_datetime(None, utc)
         t.insert(when=when)
