@@ -2,24 +2,18 @@
 
 import hashlib
 import json
-import re
-from datetime import datetime
 
 from trac.core import *
+from trac.core import ExtensionPoint
 from trac.ticket.model import Milestone, Ticket
 from trac.ticket.notification import TicketNotifyEmail
+from trac.perm import PermissionSystem
+from trac.perm import IPermissionGroupProvider
 from trac.util.datefmt import (
     get_date_format_hint, get_datetime_format_hint, to_utimestamp,
     user_time, utc, to_datetime
 )
-from trac.util.text import (
-    empty
-)
-from trac.web.chrome import (
-    web_context
-)
 from trac.web.main import IRequestHandler
-
 from tracaccesstoken.constants import NAME_RPC_TIMESTAMP
 
 __all__ = ['TicketAPI']
@@ -32,6 +26,7 @@ class TicketAPI(Component):
         # ITemplateProvider,
         # INavigationContributor
     )
+    group_providers = ExtensionPoint(IPermissionGroupProvider)
 
     # IRequestHandler methods
     def match_request(self, req):
@@ -49,19 +44,6 @@ class TicketAPI(Component):
     def _process_new_ticket_request(self, req):
         if req.method == 'POST':
             content_type = req.get_header('Content-Type') or 'application/json'
-
-            if 'TICKET_CREATE' not in req.perm:
-                content = {
-                    'message': 'forbidden',
-                    'description': "%s privileges are required to perform this operation. "
-                                   "You don't have the required permissions." % 'TICKET_CREATE'
-                }
-                req.send_response(403)
-                req.send_header('Content-Type', content_type)
-                req.send_header('Content-Length', len(json.dumps(content)))
-                req.end_headers()
-                req.write(json.dumps(content))
-                return None
 
             authorization = self._authorization(req)
             if not authorization:
@@ -96,6 +78,20 @@ class TicketAPI(Component):
                     req.end_headers()
                     req.write(json.dumps(content))
                     return None
+
+            allow_create_ticket = 'TICKET_CREATE' in self._get_groups(authname)
+            if allow_create_ticket:
+                content = {
+                    'message': 'forbidden',
+                    'description': "%s privileges are required to perform this operation. "
+                                   "You don't have the required permissions." % 'TICKET_CREATE'
+                }
+                req.send_response(403)
+                req.send_header('Content-Type', content_type)
+                req.send_header('Content-Length', len(json.dumps(content)))
+                req.end_headers()
+                req.write(json.dumps(content))
+                return None
 
             try:
                 ticket_id = self._create(req, authname)
@@ -187,8 +183,21 @@ class TicketAPI(Component):
                                    "of ticket #%s: %s" % (t.id, e))
         return t.id
 
-    def _prepare_data(self, req, ticket, absurls=False):
-        return {'ticket': ticket, 'to_utimestamp': to_utimestamp,
-                'context': web_context(req, ticket.resource, absurls=absurls),
-                'preserve_newlines': self.must_preserve_newlines,
-                'emtpy': empty}
+    def _get_groups(self, user):
+        groups = set([user])
+        for provider in self.group_providers:
+            for group in provider.get_permission_groups(user):
+                groups.add(group)
+
+        self.log.info(groups)
+        perms = PermissionSystem(self.env).get_user_permissions(user)
+        repeat = True
+        while repeat:
+            repeat = False
+            for action in perms:
+                if action in groups and not action.isupper() and action not in groups:
+                    groups.add(action)
+                    repeat = True
+
+        self.log.info(perms)
+        return groups
