@@ -78,7 +78,11 @@ $(document).ready(function () {
 			$.ajax({
 				method: 'DELETE',
 				contentType: "application/json",
-				url: 'accesstoken?token_id=' + arg.item.id
+				url: 'accesstoken',
+        data: {
+          token_id:  arg.item.id,
+          action: 'DELETE'
+				}
 			}).done(function(data) {
 				console.log(data);
 			});
@@ -88,10 +92,12 @@ $(document).ready(function () {
 			$.ajax({
 				method: 'PUT',
 				contentType: "application/json",
-				url: 'accesstoken?token_id=' + arg.item.id,
-				data: JSON.stringify({
-					description: arg.item.description
-				})
+				url: 'accesstoken',
+        data: {
+          token_id:  arg.item.id,
+          description: arg.item.description,
+          action: 'PUT'
+				}
 			}).done(function(data) {
 				console.log(data);
 			});
@@ -116,6 +122,7 @@ $(document).ready(function () {
 
 	$('#newToken').click(function() {
     var postData = {
+      action: 'POST',
 			accessToken: Math.guid(),
 			description: $('#tokenDesc').val(),
 			creationTime: new Date().yyyy_mm_ddTHH_mm_ss_sssZ()
@@ -129,7 +136,7 @@ $(document).ready(function () {
 			method: 'POST',
 			contentType: "application/json",
 			url: 'accesstoken',
-			data: JSON.stringify(postData)
+			data: postData
 		}).done(function(data) {
 			$("#clipboard").val(postData.accessToken);
 		})
