@@ -12,7 +12,7 @@ a Trac plugin.
 How to use
 ----------
 
-1. Create your personal access key in trac Preference>Access Tokens. Press *New Token* button then copy the access token to clipboard with *Copy to clipboard* button.
+1. Create your personal access key in trac Preference>Access Tokens. Press `New Token` button then copy the access token to clipboard with `Copy to clipboard` button.
 ![screenshot](https://raw.githubusercontent.com/wusung/TracAccessTokenPlugin/master/tracaccesstoken/htdocs/img/example.png "Screenshot")
 
 
