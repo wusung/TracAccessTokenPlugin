@@ -43,9 +43,9 @@ This assumes you already have a Trac environment setup.
 
 1. Build and install the plugin
 ```
-cd tracaccesstokenplugin
+cd TracAccessTokenPlugin
 python setup.py bdist_egg
-cp ./dist/tracaccesstoken-*.egg <trac_environment_home>/plugins
+cp ./dist/TracAccessTokenPlugin-*.egg <trac_environment_home>/plugins
 ```
 
 2. Configure your trac.ini (see the Configuration section below).
@@ -57,7 +57,7 @@ cp ./dist/tracaccesstoken-*.egg <trac_environment_home>/plugins
 python db_init.py <trac_environment_home>
 ```
 
-That's it. You should see an Access Token menu in the your preference.
+That's it. You should see an Access Tokens menu in the your preference.
 
 
 
