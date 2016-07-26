@@ -3,7 +3,7 @@ Trac Personal Access Tokens Plugin
 
 An personal access tokens plugin for the open source Trac project
 (http://trac.edgewall.org/). This Trac plugin allows you to generate personal access token in Trac. 
-This plugin also allow you to insert tickets with the generating key. 
+This plugin also allow you to insert tickets with the generating access tokens. 
 
 See http://trac.edgewall.org/wiki/TracDev for more information about developing
 a Trac plugin.
