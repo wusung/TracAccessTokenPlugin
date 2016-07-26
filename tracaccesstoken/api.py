@@ -172,7 +172,6 @@ class TicketAPI(Component):
         t['reporter'] = author or authname_
         t['author'] = author or authname_
 
-        self.log.debug('%s %s', author, authname_)
         # custom create timestamp?
         when = when or getattr(req, NAME_RPC_TIMESTAMP, None)
         if when and 'TICKET_ADMIN' not in self._get_groups(authname_):
@@ -191,19 +190,5 @@ class TicketAPI(Component):
         return t.id
 
     def _get_groups(self, user):
-        # groups = set([user])
-        # for provider in self.group_providers:
-        #     for group in provider.get_permission_groups(user):
-        #         groups.add(group)
-        #
-        # perms = PermissionSystem(self.env).get_user_permissions(user)
-        # repeat = True
-        # while repeat:
-        #     repeat = False
-        #     for action in perms:
-        #         if action in groups and not action.isupper() and action not in groups:
-        #             groups.add(action)
-        #             repeat = True
-        #
         self.log.debug(PermissionSystem(self.env).get_user_permissions(user))
         return PermissionSystem(self.env).get_user_permissions(user)

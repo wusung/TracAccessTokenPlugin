@@ -2,16 +2,16 @@ BRANCH		= `git rev-parse --abbrev-ref HEAD`
 VERSION		= `cat VERSION`
 TRACD_CONFIG_PATH = ../test
 
+.PHONY: build
+build:
+	python setup.py bdist_egg
+
 init:
 	pip install -r requirements.txt
 
 .PHONY: clean
 clean:
-	rm -rf build tracaccesstoken.egg-info dist
-
-.PHONY: build
-build:
-	python setup.py bdist_egg
+	rm -rf build TracAccessTokenPlugin.egg-info dist
 
 .PHONY: rebuild
 rebuild: clean build

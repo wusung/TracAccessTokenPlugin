@@ -3,12 +3,13 @@ import sys
 
 from setuptools import setup
 
-PACKAGE = 'tracaccesstoken'
+PACKAGE = 'TracAccessTokenPlugin'
+SOURCE = 'tracaccesstoken'
 with open('VERSION') as f:
     VERSION = f.read().rstrip()
 
 REQUIRES = [
-    'Trac>=0.11'
+    'Trac>=1.0.0'
 ]
 
 if sys.version_info[:4] < (2, 6):
@@ -32,13 +33,13 @@ setup(name=PACKAGE,
       keywords=['trac plugin', 'access token'],
       author='Wusung Peng',
       author_email='wusungpeng@kkbox.com',
-      url="https://gitlab.com/wusung/tracauthtokenplugin.git",
+      url="https://gitlab.com/wusung/TracAccessTokenPlugin.git",
       license='SEE LICENSE',
       platforms=['linux', 'osx', 'unix', 'win32'],
-      packages=[PACKAGE],
-      entry_points={'trac.plugins': '%s = tracaccesstoken' % PACKAGE},
+      packages=[SOURCE],
+      entry_points={'trac.plugins': '%s = %s' % (PACKAGE, SOURCE)},
       package_data={
-          'tracaccesstoken': [
+          SOURCE: [
               'templates/*.html',
               'htdocs/css/*.css',
               'htdocs/js/*.js'
