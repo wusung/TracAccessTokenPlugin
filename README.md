@@ -12,8 +12,8 @@ a Trac plugin.
 How to use
 ----------
 
-1. Create your personal access key in trac Preference>Access Tokens
-![screenshot](https://github.com/wusung/tracauthtokenplugin/raw/master/tracaccesstoken/htdocs/img/example.png "Screenshot")
+1. Create your personal access key in trac Preference>Access Tokens. Press `New Token` button then copy the access token to clipboard with `Copy to clipboard` button.
+![screenshot](https://raw.githubusercontent.com/wusung/TracAccessTokenPlugin/master/tracaccesstoken/htdocs/img/example.png "Screenshot")
 
 
 2. Use the token in HTTP header. You can see the following codes.
@@ -26,7 +26,7 @@ curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${acce
   "owner": "wusugnpeng",
   "notify": "true",
   "cc": "tingwu"
-}' "http://127.0.0.1:8001/test/api/tickets"
+}' "http://192.168.24.206/trac/api/tickets"
 
 ```
 
