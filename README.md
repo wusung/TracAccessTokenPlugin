@@ -54,7 +54,7 @@ cp ./dist/TracAccessTokenPlugin-*.egg <trac_environment_home>/plugins
 
 4. Create the new tables for the plugin.
 ```
-python db_init.py <trac_environment_home>
+python db_init.py -c <trac_environment_home>
 ```
 
 That's it. You should see an Access Tokens menu in the your preference.
