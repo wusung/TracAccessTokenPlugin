@@ -26,7 +26,7 @@ curl -X POST -H "Content-Type: application/json" -H "Authorization: token ${acce
   "owner": "wusugnpeng",
   "notify": "true",
   "cc": "tingwu"
-}' "http://127.0.0.1:8001/test/api/tickets"
+}' "http://192.168.24.206/trac/api/tickets"
 
 ```
 
