@@ -6,17 +6,9 @@ import argparse
 from trac.db import Table, Column, Index, DatabaseManager
 from trac.env import Environment
 
-schema = [
-    Table('kkbox_trac_access_token', key='id')[
-        Column('id', auto_increment=True),
-        Column('access_token'),
-        Column('description'),
-        Column('username'),
-        Column('change_time', type='int64'),
-        Column('create_time', type='int64'),
-        Column('last_use_time', type='int64')
-    ]
-]
+import db_default
+
+schema = db_default.tables
 
 parser = argparse.ArgumentParser()
 parser.add_argument("path", help="The root path of Trac environment")

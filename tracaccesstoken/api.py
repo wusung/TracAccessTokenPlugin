@@ -2,9 +2,11 @@
 
 import hashlib
 import json
+import re
 
 from trac.core import *
-from trac.core import ExtensionPoint
+from trac.env import IEnvironmentSetupParticipant
+from trac.db import DatabaseManager
 from trac.ticket.model import Milestone, Ticket
 from trac.ticket.notification import TicketNotifyEmail
 from trac.perm import PermissionSystem
@@ -16,17 +18,75 @@ from trac.util.datefmt import (
 from trac.web.main import IRequestHandler
 from tracaccesstoken.constants import NAME_RPC_TIMESTAMP
 
+import db_default
+
 __all__ = ['TicketAPI']
+
+
+NUMBERS_RE = re.compile(r'\d+', re.U)
 
 
 class TicketAPI(Component):
     """ An interface to Trac's ticketing system. """
     implements(
         IRequestHandler,
+        IEnvironmentSetupParticipant,
         # ITemplateProvider,
         # INavigationContributor
     )
     group_providers = ExtensionPoint(IPermissionGroupProvider)
+
+    # IEnvironmentSetupParticipant methods
+    def environment_created(self):
+        self.found_db_version = 0
+        self.upgrade_environment(self.env.get_db_cnx())
+
+    def environment_needs_upgrade(self, db):
+        cursor = db.cursor()
+        cursor.execute("SELECT value FROM system WHERE name=%s",
+                       (db_default.name,))
+        value = cursor.fetchone()
+        try:
+            self.found_db_version = int(value[0])
+            if self.found_db_version < db_default.version:
+                return True
+        except:
+            self.found_db_version = 0
+            return True
+
+        return False
+
+    def upgrade_environment(self, db):
+        db_manager, _ = DatabaseManager(self.env)._get_connector()
+
+        # update the version
+        old_data = {}  # {table.name: (cols, rows)}
+        cursor = db.cursor()
+        if not self.found_db_version:
+            cursor.execute("INSERT INTO system (name, value) VALUES (%s, %s)",
+                           (db_default.name, db_default.version))
+        else:
+            cursor.execute("UPDATE system SET value=%s WHERE name=%s",
+                           (db_default.version, db_default.name))
+            for table in db_default.tables:
+                cursor.execute("SELECT * FROM " + table.name)
+                cols = [x[0] for x in cursor.description]
+                rows = cursor.fetchall()
+                old_data[table.name] = (cols, rows)
+                cursor.execute("DROP TABLE " + table.name)
+
+        # insert the default table
+        for table in db_default.tables:
+            for sql in db_manager.to_sql(table):
+                cursor.execute(sql)
+
+            # add old data
+            if table.name in old_data:
+                cols, rows = old_data[table.name]
+                sql = 'INSERT INTO %s (%s) VALUES (%s)' % \
+                      (table.name, ','.join(cols), ','.join(['%s'] * len(cols)))
+                for row in rows:
+                    cursor.execute(sql, row)
 
     # IRequestHandler methods
     def match_request(self, req):

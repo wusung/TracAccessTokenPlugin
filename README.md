@@ -45,16 +45,16 @@ This assumes you already have a Trac environment setup.
 ```
 cd TracAccessTokenPlugin
 python setup.py bdist_egg
-cp ./dist/TracAccessTokenPlugin-*.egg <trac_environment_home>/plugins
+cp ./dist/TracAccessTokenPlugin-*.egg ${trac_environment_home}/plugins
 ```
 
 2. Configure your trac.ini (see the Configuration section below).
 
 3. Restart the trac server. This will differ based on how you are running trac (apache, tracd, etc).
 
-4. Create the new tables for the plugin.
+4. Upgrade the database with `trac-admin` command line.
 ```
-python db_init.py -c <trac_environment_home>
+trac-admin ${trac_environment_home} upgrade 
 ```
 
 That's it. You should see an Access Tokens menu in the your preference.
